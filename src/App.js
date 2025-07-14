@@ -16,6 +16,8 @@ function App() {
           rel="noopener noreferrer"
         >
           Learn React
+          <input type="text" placeholder="Type here..." />
+          
         </a>
       </header>
     </div>
