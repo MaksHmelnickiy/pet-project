@@ -15,32 +15,39 @@ export const autos = [
 
 export const Automobiles = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const minPrice = autos.reduce((prev, current) => current.price < prev ? current.price : prev, Infinity)
+  const maxPrice = autos.reduce((prev, current) => current.price > prev ? current.price : prev, -Infinity)
+
+  const [currentPrice, setCurrentPrice] = useState(minPrice);
   const [state, setState] = useState("");
 
   const nameParam = searchParams.get("name") || "";
   const colorParam = searchParams.get("color") || "all";
   const brandParam = searchParams.get("brand") || "all";
+  const priceParam = searchParams.get("price") || minPrice;
 
   const filtered = autos.filter((item) => {
     const matchesName = item.name.toLowerCase().includes(nameParam.toLowerCase());
     const matchesColor = colorParam === "all" || item.color === colorParam;
     const matchesBrand = brandParam === "all" || item.brand === brandParam;
-    return matchesName && matchesColor && matchesBrand;
+    const matchesPrice = priceParam === minPrice || item.price === priceParam
+    return matchesName && matchesColor && matchesBrand && matchesPrice;
   });
-  const minPrice = autos.reduce((prev, current) => current.price < prev ? current.price : prev, Infinity)
-  const maxPrice = autos.reduce((prev, current) => current.price > prev ? current.price : prev, -Infinity)
 
   console.log(minPrice, maxPrice)
 
   const colorOptions = ["all", ...Array.from(new Set(autos.map((a) => a.color)))];
   const brandOptions = ["all", ...Array.from(new Set(autos.map((a) => a.brand)))];
 
+//you suck
   const handleName = (e) => {
     const value = e.target.value;
     setState(value);
     const params = Object.fromEntries(searchParams.entries());
     params.name = value;
     setSearchParams(params);
+    console.log()
   };
 
   const handleColor = (e) => {
@@ -54,10 +61,16 @@ export const Automobiles = () => {
   const handleBrand = (e) => {
     const value = e.target.value;
     const params = Object.fromEntries(searchParams.entries());
+    console.log(params)
     if (value === "all") delete params.brand;
     else params.brand = value;
     setSearchParams(params);
   };
+
+  const handleRange = (e) => {
+    const value = e.target.value
+    setCurrentPrice(value)
+  }
 
   return (
     <div style={styles.container}>
@@ -91,12 +104,13 @@ export const Automobiles = () => {
         <div>
             <input
           type="range"
-          min={0}
-          max={100000}
+          min={minPrice}
+          max={maxPrice}
+          onChange={handleRange}
           style={styles.range}
-          onChange={(e) => console.log(e.target.value)}
-        />
+            />
         <span>min: ^^ {minPrice} ^^</span>
+        <span>current ^^ {currentPrice} ^^</span>
         <span>max: ^^ {maxPrice} ^^</span>
         </div>
       </div>
@@ -126,6 +140,7 @@ const styles = {
     margin: "40px auto",
     fontFamily: "system-ui, sans-serif",
     color: "#333",
+
   },
   title: {
     textAlign: "center",
